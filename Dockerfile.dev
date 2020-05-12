@@ -1,0 +1,23 @@
+FROM python:3.7-slim-stretch AS base
+
+LABEL org.label-schema.vcs-url="https://gitlab.com/courtsite/graphene-prometheus" \
+      maintainer="Courtsite <tech+os@courtsite.dev>"
+
+WORKDIR /graphene-prometheus/
+
+RUN apt -y update \
+    && apt -y install curl git less wget jq nano vim \
+    build-essential \
+    python-dev \
+    && apt -y clean \
+    && apt -y autoremove \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PATH="$PATH:/root/.poetry/bin"
+RUN curl -sSL https://raw.githubusercontent.com/sdispater/poetry/1.0.5/get-poetry.py | POETRY_VERSION=1.0.5 python
+
+COPY pyproject.toml poetry.lock /graphene-prometheus/
+RUN poetry env use system \
+    && poetry config virtualenvs.create false \
+    && poetry env info \
+    && poetry install --no-interaction
